@@ -1,0 +1,26 @@
+{
+  "name": "adab-silsilah",
+  "version": "1.0.0",
+  "description": "Family tree management library",
+  "main": "index.js",
+  "keywords": ["family", "tree", "genealogy"],
+  "author": "Beta 'Muhammad' Priyoko <beta.priyoko@students.amikom.ac.id>",
+  "license": "Universe",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ebetap/adab-silsilah"
+  },
+  "bugs": {
+    "url": "https://github.com/ebetap/adab-silsilah/issues"
+  },
+  "homepage": "https://github.com/ebetap/adab-silsilah#readme",
+  "dependencies": {
+    // List any dependencies your package requires
+  },
+  "devDependencies": {
+    // List any development dependencies (testing frameworks, etc.)
+  },
+  "scripts": {
+    // Define any scripts you may need (test scripts, build scripts, etc.)
+  }
+}
