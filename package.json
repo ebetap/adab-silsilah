@@ -1,6 +1,6 @@
 {
   "name": "adab-silsilah",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Family tree management library",
   "main": "index.js",
   "keywords": ["family", "tree", "genealogy"],
