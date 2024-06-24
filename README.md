@@ -9,7 +9,7 @@
 You can install `ADABsilsilah` via npm:
 
 ```bash
-npm install adab-silsilah
+npm install adab-silsilah-tree
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ npm install adab-silsilah
 ### Importing the Library
 
 ```javascript
-import ADABsilsilah from 'adab-silsilah';
+import ADABsilsilah from 'adab-silsilah-tree';
 
 // Example data for the root member
 const rootMemberData = {
@@ -213,7 +213,7 @@ Initializes a new instance of `FamilyMember` with the provided data.
 
 ```javascript
 // Initialize the family tree
-import ADABsilsilah from 'adab-silsilah';
+import ADABsilsilah from 'adab-silsilah-tree';
 
 const rootMemberData = {
   id: 1,
