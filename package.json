@@ -13,14 +13,5 @@
   "bugs": {
     "url": "https://github.com/ebetap/adab-silsilah/issues"
   },
-  "homepage": "https://github.com/ebetap/adab-silsilah#readme",
-  "dependencies": {
-    // List any dependencies your package requires
-  },
-  "devDependencies": {
-    // List any development dependencies (testing frameworks, etc.)
-  },
-  "scripts": {
-    // Define any scripts you may need (test scripts, build scripts, etc.)
-  }
+  "homepage": "https://github.com/ebetap/adab-silsilah#readme"
 }
