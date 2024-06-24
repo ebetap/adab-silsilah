@@ -10,6 +10,7 @@ class FamilyMember {
     this.siblings = siblings;
     this.spouse = spouse;
     this.phone = phone;
+    this.events = []; // Array untuk menyimpan kejadian khusus
   }
 
   addChild(child) {
@@ -24,6 +25,10 @@ class FamilyMember {
 
   addSpouse(spouse) {
     this.spouse = new FamilyMember(spouse);
+  }
+
+  addEvent(event) {
+    this.events.push(event);
   }
 }
 
@@ -125,6 +130,15 @@ class ADABsilsilah {
     }
   }
 
+  addEvent(memberId, event) {
+    const member = this.findMember(memberId);
+    if (!member) {
+      throw new Error(`Member with ID ${memberId} not found`);
+    }
+
+    member.addEvent(event);
+  }
+
   toJson() {
     const membersArray = Array.from(this.members.values());
     return JSON.stringify(membersArray, null, 2);
@@ -140,6 +154,48 @@ class ADABsilsilah {
         this.displayFamilyTree(child, indent + "  ");
       }
     }
+  }
+
+  searchMembers(query) {
+    const results = [];
+    for (const member of this.members.values()) {
+      // Implementasi pencarian berdasarkan nama atau jenis kelamin
+      if (member.name.toLowerCase().includes(query.toLowerCase()) || member.gender.toLowerCase() === query.toLowerCase()) {
+        results.push(member);
+      }
+    }
+    return results;
+  }
+
+  exportToCSV() {
+    let csv = "ID,Name,Gender,BirthDate,DeathDate,Parents,Children,Siblings,Spouse,Phone\n";
+    for (const member of this.members.values()) {
+      csv += `${member.id},"${member.name}",${member.gender},${member.birthDate},${member.deathDate || ""},${member.parents.join(';') || ""},${member.children.map(child => child.id).join(';') || ""},${member.siblings.map(sibling => sibling.id).join(';') || ""},${member.spouse ? member.spouse.id : ""},${member.phone || ""}\n`;
+    }
+    return csv;
+  }
+
+  importFromCSV(csvData) {
+    const lines = csvData.trim().split('\n');
+    const headers = lines[0].split(',');
+    const membersData = lines.slice(1);
+
+    membersData.forEach(memberData => {
+      const data = memberData.split(',');
+      const member = {
+        id: parseInt(data[0]),
+        name: data[1].replace(/"/g, ''),
+        gender: data[2],
+        birthDate: data[3],
+        deathDate: data[4] || null,
+        parents: data[5] ? data[5].split(';').map(id => parseInt(id)) : [],
+        children: data[6] ? data[6].split(';').map(id => parseInt(id)) : [],
+        siblings: data[7] ? data[7].split(';').map(id => parseInt(id)) : [],
+        spouse: data[8] ? parseInt(data[8]) : null,
+        phone: data[9] || null
+      };
+      this.members.set(member.id, new FamilyMember(member));
+    });
   }
 }
 
