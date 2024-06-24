@@ -81,7 +81,6 @@ class ADABsilsilah {
       throw new Error(`Member with ID ${memberId} not found`);
     }
 
-    // Remove member from parents' children lists
     member.parents.forEach(parentId => {
       const parent = this.findMember(parentId);
       if (parent) {
@@ -89,7 +88,6 @@ class ADABsilsilah {
       }
     });
 
-    // Remove member from siblings' siblings lists
     member.siblings.forEach(siblingId => {
       const sibling = this.findMember(siblingId);
       if (sibling) {
@@ -97,7 +95,6 @@ class ADABsilsilah {
       }
     });
 
-    // Remove member from spouse's spouse reference
     if (member.spouse) {
       const spouse = this.findMember(member.spouse.id);
       if (spouse) {
@@ -105,7 +102,6 @@ class ADABsilsilah {
       }
     }
 
-    // Remove all references to this member
     this.members.delete(memberId);
   }
 
