@@ -1,272 +1,92 @@
-# ADABsilsilah Documentation
+## Dokumentasi Kelas `ADABsilsilah`
 
-## Introduction
+### FamilyMember Class
+Represents an individual member of the family tree.
 
-`ADABsilsilah` is a JavaScript library designed for managing and documenting family lineage. It allows you to create and manipulate a family tree, add members with relationships, manage special events, search for members, and export/import data in CSV format.
-
-## Installation
-
-You can install `ADABsilsilah` via npm:
-
-```bash
-npm install adab-silsilah-tree
-```
-
-## Usage
-
-### Importing the Library
-
-```javascript
-import ADABsilsilah from 'adab-silsilah-tree';
-
-// Example data for the root member
-const rootMemberData = {
-  id: 1,
-  name: 'John Doe',
-  gender: 'male',
-  birthDate: '1980-01-01',
-  phone: '1234567890' // Optional: phone number
-};
-
-// Initialize the family tree with the root member
-const familyTree = new ADABsilsilah(rootMemberData);
-```
-
-### Class: `ADABsilsilah`
-
-#### Constructor: `new ADABsilsilah(rootMember)`
-
-Initializes a new instance of `ADABsilsilah` with the root member specified.
-
-- **Parameters:**
-  - `rootMember` (Object): Data of the root member containing `id`, `name`, `gender`, `birthDate`, and optionally `phone`.
+#### Attributes:
+- **id** (Number): Unique identifier for the family member.
+- **name** (String): Name of the family member.
+- **gender** (String): Gender of the family member.
+- **birthDate** (String): Birth date of the family member in `YYYY-MM-DD` format.
+- **deathDate** (String, optional): Death date of the family member in `YYYY-MM-DD` format.
+- **parents** (Array): Array of parent IDs.
+- **children** (Array): Array of child `FamilyMember` instances.
+- **siblings** (Array): Array of sibling `FamilyMember` instances.
+- **spouse** (FamilyMember, optional): Spouse `FamilyMember` instance.
+- **phone** (String, optional): Phone number of the family member.
+- **events** (Array): Array to store special events related to the member.
 
 #### Methods:
+- **addChild(child)**: Adds a child to the member.
+- **addSibling(sibling)**: Adds a sibling to the member.
+- **addSpouse(spouse)**: Adds a spouse to the member.
+- **addEvent(event)**: Adds an event to the member.
+- **recursiveUpdate(updatedInfo)**: Recursively updates member's information and related members.
 
-1. **`addMember(member, relationship, relativeId)`**
+### ADABsilsilah Class
+Manages the entire family tree structure.
 
-   Adds a new member to the family tree with a specified relationship to an existing member.
-
-   - **Parameters:**
-     - `member` (Object): Data of the new member to be added.
-     - `relationship` (String): Relationship type (`child`, `sibling`, `spouse`).
-     - `relativeId` (Number): ID of the existing member to relate to.
-
-   ```javascript
-   const newMemberData = {
-     id: 2,
-     name: 'Jane Doe',
-     gender: 'female',
-     birthDate: '1985-03-15',
-     phone: '9876543210' // Optional: phone number
-   };
-
-   familyTree.addMember(newMemberData, 'child', 1); // Adds Jane Doe as a child of John Doe
-   ```
-
-2. **`removeMember(memberId)`**
-
-   Removes a member from the family tree.
-
-   - **Parameters:**
-     - `memberId` (Number): ID of the member to be removed.
-
-   ```javascript
-   familyTree.removeMember(2); // Removes Jane Doe from the family tree
-   ```
-
-3. **`updateMember(memberId, updatedInfo)`**
-
-   Updates information of an existing member in the family tree.
-
-   - **Parameters:**
-     - `memberId` (Number): ID of the member to be updated.
-     - `updatedInfo` (Object): Updated data fields for the member.
-
-   ```javascript
-   const updatedInfo = {
-     name: 'Jane Doe-Smith',
-     phone: '9876543210'
-   };
-
-   familyTree.updateMember(2, updatedInfo); // Updates Jane Doe's name and phone number
-   ```
-
-4. **`addEvent(memberId, event)`**
-
-   Adds a special event to a member, such as birth, death, marriage, etc.
-
-   - **Parameters:**
-     - `memberId` (Number): ID of the member to add the event to.
-     - `event` (String): Description of the event.
-
-   ```javascript
-   familyTree.addEvent(2, 'Married John Smith'); // Adds a marriage event to Jane Doe-Smith
-   ```
-
-5. **`findMember(memberId)`**
-
-   Finds a member in the family tree based on their ID.
-
-   - **Parameters:**
-     - `memberId` (Number): ID of the member to find.
-
-   - **Returns:**
-     - `FamilyMember` object or `null` if not found.
-
-   ```javascript
-   const member = familyTree.findMember(2);
-   if (member) {
-     console.log(`Found member: ${member.name}`);
-   } else {
-     console.log('Member not found');
-   }
-   ```
-
-6. **`searchMembers(query)`**
-
-   Searches for members in the family tree based on a query (name or gender).
-
-   - **Parameters:**
-     - `query` (String): Search query.
-
-   - **Returns:**
-     - Array of `FamilyMember` objects that match the query.
-
-   ```javascript
-   const results = familyTree.searchMembers('Jane');
-   console.log('Search results:', results);
-   ```
-
-7. **`exportToCSV()`**
-
-   Exports the family tree data to a CSV format string.
-
-   - **Returns:**
-     - CSV format string containing member details.
-
-   ```javascript
-   const csvData = familyTree.exportToCSV();
-   console.log('Exported CSV data:', csvData);
-   ```
-
-8. **`importFromCSV(csvData)`**
-
-   Imports family tree data from a CSV format string.
-
-   - **Parameters:**
-     - `csvData` (String): CSV format data to import.
-
-   ```javascript
-   const csvData = `
-     ID,Name,Gender,BirthDate,DeathDate,Parents,Children,Siblings,Spouse,Phone
-     1,"John Doe",male,1980-01-01,,2,,,,1234567890
-     2,"Jane Doe-Smith",female,1985-03-15,,,1,,1,9876543210
-   `;
-
-   familyTree.importFromCSV(csvData);
-   ```
-
-9. **`displayFamilyTree(member, indent)`**
-
-   Displays the family tree starting from a specified member recursively.
-
-   - **Parameters:**
-     - `member` (FamilyMember): Optional. Starting member to display (default: root member).
-     - `indent` (String): Optional. String for indentation (default: "").
-
-   ```javascript
-   familyTree.displayFamilyTree(); // Displays the entire family tree starting from the root member
-   ```
-
-10. **`toJson()`**
-
-    Converts the family tree data to JSON format.
-
-    - **Returns:**
-      - JSON string representation of the family tree data.
-
-    ```javascript
-    const jsonData = familyTree.toJson();
-    console.log('Family tree JSON:', jsonData);
-    ```
-
-### Class: `FamilyMember`
-
-Represents a member of the family.
-
-#### Constructor: `new FamilyMember(data)`
-
-Initializes a new instance of `FamilyMember` with the provided data.
-
-- **Parameters:**
-  - `data` (Object): Data object containing member details (`id`, `name`, `gender`, `birthDate`, `deathDate`, `parents`, `children`, `siblings`, `spouse`, `phone`).
+#### Constructor:
+- **constructor(rootMember)**: Initializes the family tree with a root member.
 
 #### Methods:
+- **findMember(memberId)**: Finds and returns a member by ID.
+- **validateMember(member)**: Validates the given member object for required attributes and correct formats.
+- **validateDate(dateString)**: Validates the format of a date string (`YYYY-MM-DD`).
+- **addMember(member, relationship, relativeId)**: Adds a new member to the tree with a specified relationship (child, sibling, spouse) to an existing relative.
+- **removeMember(memberId)**: Removes a member from the tree by ID and updates related members.
+- **updateMember(memberId, updatedInfo)**: Updates information of an existing member by ID.
+- **addEvent(memberId, event)**: Adds an event to a member by ID.
+- **toJson()**: Converts the family tree to a JSON format.
+- **displayFamilyTree(member, indent)**: Displays the family tree hierarchy starting from the given member (default is root).
+- **searchMembers(query)**: Searches for members based on name or gender.
+- **exportToCSV()**: Exports the family tree data to a CSV format.
+- **importFromCSV(csvData)**: Imports family tree data from a CSV format.
 
-- `addChild(child)`: Adds a child to the member.
-- `addSibling(sibling)`: Adds a sibling to the member.
-- `addSpouse(spouse)`: Sets the spouse of the member.
-- `addEvent(event)`: Adds a special event to the member.
-
-## Examples
-
+#### Usage Example:
 ```javascript
-// Initialize the family tree
-import ADABsilsilah from 'adab-silsilah-tree';
-
-const rootMemberData = {
+// Creating a family tree instance
+const rootMember = {
   id: 1,
-  name: 'John Doe',
-  gender: 'male',
-  birthDate: '1980-01-01',
-  phone: '1234567890'
+  name: "John Doe",
+  gender: "Male",
+  birthDate: "1990-01-01"
 };
+const familyTree = new ADABsilsilah(rootMember);
 
-const familyTree = new ADABsilsilah(rootMemberData);
+// Adding members and relationships
+familyTree.addMember({ id: 2, name: "Jane Doe", gender: "Female", birthDate: "1995-02-15" }, "spouse", 1);
+familyTree.addMember({ id: 3, name: "Alice Doe", gender: "Female", birthDate: "2020-05-10" }, "child", 1);
 
-// Add members and relationships
-const janeData = {
-  id: 2,
-  name: 'Jane Doe',
-  gender: 'female',
-  birthDate: '1985-03-15',
-  phone: '9876543210'
-};
-familyTree.addMember(janeData, 'child', 1); // Jane Doe is a child of John Doe
+// Displaying family tree
+familyTree.displayFamilyTree();
 
-// Update member information
-const updatedInfo = {
-  name: 'Jane Doe-Smith',
-  phone: '9876543210'
-};
-familyTree.updateMember(2, updatedInfo); // Updates Jane Doe's name and phone number
+// Updating a member
+familyTree.updateMember(1, { name: "John Smith", phone: "1234567890" });
 
-// Display family tree
-familyTree.displayFamilyTree(); // Displays the entire family tree
+// Adding an event
+familyTree.addEvent(1, { date: "2024-01-01", description: "New Year Celebration" });
 
-// Search members
-const results = familyTree.searchMembers('Jane');
-console.log('Search results:', results);
-
-// Export to CSV
+// Exporting to CSV
 const csvData = familyTree.exportToCSV();
-console.log('Exported CSV data:', csvData);
+console.log(csvData);
 
-// Import from CSV
-const csvImportData = `
-  ID,Name,Gender,BirthDate,DeathDate,Parents,Children,Siblings,Spouse,Phone
-  1,"John Doe",male,1980-01-01,,2,,,,1234567890
-  2,"Jane Doe-Smith",female,1985-03-15,,,1,,1,9876543210
-`;
-familyTree.importFromCSV(csvImportData);
+// Importing from CSV
+familyTree.importFromCSV(csvData);
+
+// Searching for members
+const searchResults = familyTree.searchMembers("Jane");
+console.log(searchResults);
 ```
 
-## Notes
+### Penjelasan Metode Baru dan yang Diperbarui:
+- **validateDate(dateString)**: Menambahkan validasi untuk memastikan bahwa string tanggal berada dalam format `YYYY-MM-DD`.
+- **recursiveUpdate(updatedInfo)**: Metode tambahan dalam `FamilyMember` untuk memperbarui informasi anggota dan informasi terkait (anak, saudara) secara rekursif.
+- **updateMember(memberId, updatedInfo)**: Memperbarui logika untuk memastikan validasi tambahan pada format tanggal dan memperbarui informasi terkait menggunakan `recursiveUpdate`.
 
-- Ensure all data provided is valid according to the required format.
-- Handle exceptions and errors appropriately when using methods.
+### Penanganan Impor dan Ekspor CSV:
+- **exportToCSV()**: Mengekspor data pohon keluarga ke format CSV dengan header yang jelas.
+- **importFromCSV(csvData)**: Mengimpor data pohon keluarga dari format CSV, memastikan setiap anggota diubah menjadi instance `FamilyMember`.
 
----
-
-Dokumentasi di atas memberikan gambaran lengkap tentang penggunaan `ADABsilsilah`, termasuk cara menginisialisasi, menambahkan anggota, mengelola relasi, mencari anggota, mengimpor/ mengekspor data, dan banyak lagi. Pastikan untuk memahami dan mengadaptasi sesuai dengan kebutuhan proyek Anda.
+### Kesimpulan:
+Dengan perbaikan ini, kelas `ADABsilsilah` menjadi lebih kuat dan fleksibel dalam menangani berbagai skenario manajemen pohon keluarga, termasuk validasi yang lebih baik, pembaruan rekursif, dan kemampuan impor/ekspor yang lebih efisien.
