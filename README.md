@@ -9,7 +9,7 @@
 You can install `ADABsilsilah` via npm:
 
 ```bash
-npm install adabsilsilah
+npm install adab-silsilah
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ npm install adabsilsilah
 ### Importing the Library
 
 ```javascript
-import ADABsilsilah from 'adabsilsilah';
+import ADABsilsilah from 'adab-silsilah';
 
 // Example data for the root member
 const rootMemberData = {
