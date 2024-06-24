@@ -1,3 +1,43 @@
+import i18next from 'i18next';
+import * as d3 from 'd3';
+
+i18next.init({
+  lng: 'en',
+  resources: {
+    en: {
+      translation: {
+        'memberMustHave': 'Member must have id, name, gender, and birthDate',
+        'memberExists': 'Member with ID {{id}} already exists',
+        'invalidPhoneNumber': 'Phone number {{phone}} is invalid. It should be 10 to 15 digits.',
+        'invalidDate': 'Date {{date}} is invalid. It should be in the format YYYY-MM-DD.',
+        'relativeNotFound': 'Relative with ID {{id}} not found',
+        'unsupportedRelationship': 'Unsupported relationship type: {{relationship}}',
+        'memberNotFound': 'Member with ID {{id}} not found',
+      }
+    },
+    id: {
+      translation: {
+        'memberMustHave': 'Anggota harus memiliki id, nama, jenis kelamin, dan tanggal lahir',
+        'memberExists': 'Anggota dengan ID {{id}} sudah ada',
+        'invalidPhoneNumber': 'Nomor telepon {{phone}} tidak valid. Harus terdiri dari 10 hingga 15 digit.',
+        'invalidDate': 'Tanggal {{date}} tidak valid. Harus dalam format YYYY-MM-DD.',
+        'relativeNotFound': 'Kerabat dengan ID {{id}} tidak ditemukan',
+        'unsupportedRelationship': 'Jenis hubungan tidak didukung: {{relationship}}',
+        'memberNotFound': 'Anggota dengan ID {{id}} tidak ditemukan',
+      }
+    }
+    // Tambahkan bahasa lain di sini
+  }
+});
+
+class FamilyTreeError extends Error {
+  constructor(message, data) {
+    super(message);
+    this.data = data;
+    this.name = 'FamilyTreeError';
+  }
+}
+
 class FamilyMember {
   constructor({ id, name, gender, birthDate, deathDate = null, parents = [], children = [], siblings = [], spouse = null, phone = null }) {
     this.id = id;
@@ -10,7 +50,7 @@ class FamilyMember {
     this.siblings = siblings;
     this.spouse = spouse;
     this.phone = phone;
-    this.events = [];
+    this.events = []; // Array untuk menyimpan kejadian khusus
   }
 
   addChild(child) {
@@ -31,25 +71,18 @@ class FamilyMember {
     this.events.push(event);
   }
 
-  // Additional method for updating member information recursively
   recursiveUpdate(updatedInfo) {
+    const allowedUpdates = ['name', 'gender', 'birthDate', 'deathDate', 'phone'];
     for (const key in updatedInfo) {
-      if (updatedInfo.hasOwnProperty(key)) {
+      if (allowedUpdates.includes(key)) {
         this[key] = updatedInfo[key];
       }
     }
 
-    if (this.children) {
-      this.children.forEach(child => {
-        child.recursiveUpdate({ parents: [this.id] });
-      });
-    }
-
-    if (this.siblings) {
-      this.siblings.forEach(sibling => {
-        sibling.siblings = sibling.siblings.map(sib => sib.id === this.id ? this.id : sib.id);
-        sibling.recursiveUpdate({ siblings: sibling.siblings });
-      });
+    this.children.forEach(child => child.recursiveUpdate(updatedInfo));
+    this.siblings.forEach(sibling => sibling.recursiveUpdate(updatedInfo));
+    if (this.spouse) {
+      this.spouse.recursiveUpdate(updatedInfo);
     }
   }
 }
@@ -67,32 +100,32 @@ class ADABsilsilah {
 
   validateMember(member) {
     if (!member.id || !member.name || !member.gender || !member.birthDate) {
-      throw new Error('Member must have id, name, gender, and birthDate');
+      throw new FamilyTreeError(i18next.t('memberMustHave'));
     }
     if (this.members.has(member.id)) {
-      throw new Error(`Member with ID ${member.id} already exists`);
+      throw new FamilyTreeError(i18next.t('memberExists', { id: member.id }));
     }
     if (member.phone && !/^\d{10,15}$/.test(member.phone)) {
-      throw new Error(`Phone number ${member.phone} is invalid. It should be 10 to 15 digits.`);
-    }
-    // Additional validation for date format
-    this.validateDate(member.birthDate);
-    if (member.deathDate) {
-      this.validateDate(member.deathDate);
+      throw new FamilyTreeError(i18next.t('invalidPhoneNumber', { phone: member.phone }));
     }
   }
 
   validateDate(dateString) {
-    if (!moment(dateString, 'YYYY-MM-DD', true).isValid()) {
-      throw new Error(`Invalid date format for ${dateString}. Should be in YYYY-MM-DD format.`);
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) {
+      throw new FamilyTreeError(i18next.t('invalidDate', { date: dateString }));
     }
   }
 
   addMember(member, relationship, relativeId) {
     this.validateMember(member);
+    this.validateDate(member.birthDate);
+    if (member.deathDate) {
+      this.validateDate(member.deathDate);
+    }
     const relative = this.findMember(relativeId);
     if (!relative) {
-      throw new Error(`Relative with ID ${relativeId} not found`);
+      throw new FamilyTreeError(i18next.t('relativeNotFound', { id: relativeId }));
     }
 
     const newMember = new FamilyMember(member);
@@ -109,14 +142,14 @@ class ADABsilsilah {
         relative.addSpouse(member);
         break;
       default:
-        throw new Error(`Unsupported relationship type: ${relationship}`);
+        throw new FamilyTreeError(i18next.t('unsupportedRelationship', { relationship }));
     }
   }
 
   removeMember(memberId) {
     const member = this.findMember(memberId);
     if (!member) {
-      throw new Error(`Member with ID ${memberId} not found`);
+      throw new FamilyTreeError(i18next.t('memberNotFound', { id: memberId }));
     }
 
     member.parents.forEach(parentId => {
@@ -146,38 +179,26 @@ class ADABsilsilah {
   updateMember(memberId, updatedInfo) {
     const member = this.findMember(memberId);
     if (!member) {
-      throw new Error(`Member with ID ${memberId} not found`);
+      throw new FamilyTreeError(i18next.t('memberNotFound', { id: memberId }));
     }
 
-    // Ensure phone validation
-    if (updatedInfo.phone && !/^\d{10,15}$/.test(updatedInfo.phone)) {
-      throw new Error(`Phone number ${updatedInfo.phone} is invalid. It should be 10 to 15 digits.`);
-    }
-
-    // Validate date format if updating birthDate or deathDate
     if (updatedInfo.birthDate) {
       this.validateDate(updatedInfo.birthDate);
     }
     if (updatedInfo.deathDate) {
       this.validateDate(updatedInfo.deathDate);
     }
-
-    // Only allow certain properties to be updated
-    const allowedUpdates = ['name', 'gender', 'birthDate', 'deathDate', 'phone'];
-    for (const key in updatedInfo) {
-      if (allowedUpdates.includes(key)) {
-        member[key] = updatedInfo[key];
-      }
+    if (updatedInfo.phone && !/^\d{10,15}$/.test(updatedInfo.phone)) {
+      throw new FamilyTreeError(i18next.t('invalidPhoneNumber', { phone: updatedInfo.phone }));
     }
 
-    // Update recursively if needed
     member.recursiveUpdate(updatedInfo);
   }
 
   addEvent(memberId, event) {
     const member = this.findMember(memberId);
     if (!member) {
-      throw new Error(`Member with ID ${memberId} not found`);
+      throw new FamilyTreeError(i18next.t('memberNotFound', { id: memberId }));
     }
 
     member.addEvent(event);
@@ -200,10 +221,31 @@ class ADABsilsilah {
     }
   }
 
+  displayFamilyTreeD3() {
+    const data = Array.from(this.members.values());
+    const root = d3.stratify()
+      .id(d => d.id)
+      .parentId(d => d.parents[0])(data);
+
+    const treeLayout = d3.tree();
+    treeLayout.size([400, 200]);
+
+    const treeData = treeLayout(root);
+
+    const svg = d3.select('svg');
+    const nodes = svg.append('g')
+      .selectAll('circle')
+      .data(treeData.descendants())
+      .enter()
+      .append('circle')
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y)
+      .attr('r', 5);
+  }
+
   searchMembers(query) {
     const results = [];
     for (const member of this.members.values()) {
-      // Implementasi pencarian berdasarkan nama atau jenis kelamin
       if (member.name.toLowerCase().includes(query.toLowerCase()) || member.gender.toLowerCase() === query.toLowerCase()) {
         results.push(member);
       }
@@ -241,6 +283,56 @@ class ADABsilsilah {
       this.members.set(member.id, new FamilyMember(member));
     });
   }
+
+  backupToJSON() {
+    return JSON.stringify(Array.from(this.members.entries()), null, 2);
+  }
+
+  restoreFromJSON(jsonData) {
+    const data = JSON.parse(jsonData);
+    this.members = new Map(data.map(([id, memberData]) => [id, new FamilyMember(memberData)]));
+  }
+
+  async fetchDataFromAPI(apiEndpoint) {
+    try {
+      const response = await fetch(apiEndpoint);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      data.forEach(member => {
+        this.addMember(member, 'root', null); // Assume API gives members without needing relationships
+      });
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
+  }
+
+  sendNotification(event, recipientPhone) {
+    // Placeholder for actual notification logic, e.g., via SMS or email
+    console.log(`Sending notification about ${event} to ${recipientPhone}`);
+  }
+
+  addReminder(memberId, event) {
+    const member = this.findMember(memberId);
+    if (!member) {
+      throw new FamilyTreeError(i18next.t('memberNotFound', { id: memberId }));
+    }
+
+    // Assume we have a function to schedule reminders
+    this.scheduleReminder(() => {
+      this.sendNotification(event, member.phone);
+    }, event.date); // Placeholder for date logic
+  }
+
+  scheduleReminder(callback, date) {
+    // Placeholder for actual scheduling logic
+    const delay = new Date(date) - new Date();
+    setTimeout(callback, delay);
+  }
 }
 
 export default ADABsilsilah;
+
+
+  
