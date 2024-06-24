@@ -1,5 +1,5 @@
 class FamilyMember {
-  constructor({ id, name, gender, birthDate, deathDate = null, parents = [], children = [], siblings = [], spouse = null }) {
+  constructor({ id, name, gender, birthDate, deathDate = null, parents = [], children = [], siblings = [], spouse = null, phone = null }) {
     this.id = id;
     this.name = name;
     this.gender = gender;
@@ -9,6 +9,7 @@ class FamilyMember {
     this.children = children;
     this.siblings = siblings;
     this.spouse = spouse;
+    this.phone = phone;
   }
 
   addChild(child) {
@@ -29,26 +30,32 @@ class FamilyMember {
 class ADABsilsilah {
   constructor(rootMember) {
     this.root = new FamilyMember(rootMember);
+    this.members = new Map();
+    this.members.set(rootMember.id, this.root);
   }
 
-  findMember(memberId, currentMember = this.root) {
-    if (currentMember.id === memberId) {
-      return currentMember;
+  findMember(memberId) {
+    return this.members.get(memberId) || null;
+  }
+
+  validateMember(member) {
+    if (!member.id || !member.name || !member.gender || !member.birthDate) {
+      throw new Error('Member must have id, name, gender, and birthDate');
     }
-    if (currentMember.children) {
-      for (let child of currentMember.children) {
-        let result = this.findMember(memberId, child);
-        if (result) return result;
-      }
+    if (this.members.has(member.id)) {
+      throw new Error(`Member with ID ${member.id} already exists`);
     }
-    return null;
   }
 
   addMember(member, relationship, relativeId) {
+    this.validateMember(member);
     const relative = this.findMember(relativeId);
     if (!relative) {
       throw new Error(`Relative with ID ${relativeId} not found`);
     }
+
+    const newMember = new FamilyMember(member);
+    this.members.set(newMember.id, newMember);
 
     switch (relationship) {
       case "child":
@@ -65,10 +72,54 @@ class ADABsilsilah {
     }
   }
 
-  displayFamilyTree(member = this.root, indent = "") {
-    console.log(indent + member.name);
+  removeMember(memberId) {
+    const member = this.findMember(memberId);
+    if (!member) {
+      throw new Error(`Member with ID ${memberId} not found`);
+    }
+
+    member.parents.forEach(parentId => {
+      const parent = this.findMember(parentId);
+      if (parent) {
+        parent.children = parent.children.filter(child => child.id !== memberId);
+      }
+    });
+
+    member.siblings.forEach(siblingId => {
+      const sibling = this.findMember(siblingId);
+      if (sibling) {
+        sibling.siblings = sibling.siblings.filter(sibling => sibling.id !== memberId);
+      }
+    });
+
     if (member.spouse) {
-      console.log(indent + "  Spouse: " + member.spouse.name);
+      const spouse = this.findMember(member.spouse.id);
+      if (spouse) {
+        spouse.spouse = null;
+      }
+    }
+
+    this.members.delete(memberId);
+  }
+
+  updateMember(memberId, updatedInfo) {
+    const member = this.findMember(memberId);
+    if (!member) {
+      throw new Error(`Member with ID ${memberId} not found`);
+    }
+
+    Object.assign(member, updatedInfo);
+  }
+
+  toJson() {
+    const membersArray = Array.from(this.members.values());
+    return JSON.stringify(membersArray, null, 2);
+  }
+
+  displayFamilyTree(member = this.root, indent = "") {
+    console.log(indent + member.name + (member.phone ? ` (Phone: ${member.phone})` : ""));
+    if (member.spouse) {
+      console.log(indent + "  Spouse: " + member.spouse.name + (member.spouse.phone ? ` (Phone: ${member.spouse.phone})` : ""));
     }
     if (member.children) {
       for (let child of member.children) {
