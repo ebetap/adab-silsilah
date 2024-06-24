@@ -213,7 +213,7 @@ Initializes a new instance of `FamilyMember` with the provided data.
 
 ```javascript
 // Initialize the family tree
-import ADABsilsilah from 'adabsilsilah';
+import ADABsilsilah from 'adab-silsilah';
 
 const rootMemberData = {
   id: 1,
