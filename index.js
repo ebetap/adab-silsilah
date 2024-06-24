@@ -10,7 +10,7 @@ class FamilyMember {
     this.siblings = siblings;
     this.spouse = spouse;
     this.phone = phone;
-    this.events = []; // Array untuk menyimpan kejadian khusus
+    this.events = [];
   }
 
   addChild(child) {
@@ -29,6 +29,28 @@ class FamilyMember {
 
   addEvent(event) {
     this.events.push(event);
+  }
+
+  // Additional method for updating member information recursively
+  recursiveUpdate(updatedInfo) {
+    for (const key in updatedInfo) {
+      if (updatedInfo.hasOwnProperty(key)) {
+        this[key] = updatedInfo[key];
+      }
+    }
+
+    if (this.children) {
+      this.children.forEach(child => {
+        child.recursiveUpdate({ parents: [this.id] });
+      });
+    }
+
+    if (this.siblings) {
+      this.siblings.forEach(sibling => {
+        sibling.siblings = sibling.siblings.map(sib => sib.id === this.id ? this.id : sib.id);
+        sibling.recursiveUpdate({ siblings: sibling.siblings });
+      });
+    }
   }
 }
 
@@ -52,6 +74,17 @@ class ADABsilsilah {
     }
     if (member.phone && !/^\d{10,15}$/.test(member.phone)) {
       throw new Error(`Phone number ${member.phone} is invalid. It should be 10 to 15 digits.`);
+    }
+    // Additional validation for date format
+    this.validateDate(member.birthDate);
+    if (member.deathDate) {
+      this.validateDate(member.deathDate);
+    }
+  }
+
+  validateDate(dateString) {
+    if (!moment(dateString, 'YYYY-MM-DD', true).isValid()) {
+      throw new Error(`Invalid date format for ${dateString}. Should be in YYYY-MM-DD format.`);
     }
   }
 
@@ -121,6 +154,14 @@ class ADABsilsilah {
       throw new Error(`Phone number ${updatedInfo.phone} is invalid. It should be 10 to 15 digits.`);
     }
 
+    // Validate date format if updating birthDate or deathDate
+    if (updatedInfo.birthDate) {
+      this.validateDate(updatedInfo.birthDate);
+    }
+    if (updatedInfo.deathDate) {
+      this.validateDate(updatedInfo.deathDate);
+    }
+
     // Only allow certain properties to be updated
     const allowedUpdates = ['name', 'gender', 'birthDate', 'deathDate', 'phone'];
     for (const key in updatedInfo) {
@@ -128,6 +169,9 @@ class ADABsilsilah {
         member[key] = updatedInfo[key];
       }
     }
+
+    // Update recursively if needed
+    member.recursiveUpdate(updatedInfo);
   }
 
   addEvent(memberId, event) {
